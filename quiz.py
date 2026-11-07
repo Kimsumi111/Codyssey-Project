@@ -74,6 +74,11 @@ def run_quiz(quizzes):
 
     print(f"총 점수: {score}/{len(quizzes)}")
     
+def list_quizzes(quizzes):
+    for i, quiz in enumerate(quizzes):
+        print(f"{i+1}. {quiz.question}")
+
+
 def save_quizzes(quizzes):
     state["quizzes"] = [           
             {
@@ -103,7 +108,7 @@ def main():
         switch = {
             "1": lambda: run_quiz(quizzes),    # lambda를 사용하여 함수를 호출할 때 인자를 전달하지 않고 실행
             "2": lambda: add_quiz(quizzes),
-            "3": lambda: print("아직 구현하지 않은 기능입니다."),
+            "3": lambda: list_quizzes(quizzes),
             "4": lambda: print("아직 구현하지 않은 기능입니다."),
             "5": exit
         }
