@@ -24,3 +24,12 @@ class Quiz:
             print("땡!")
             return False
 
+# json 파일에서 퀴즈 데이터를 읽어와 Quiz 객체로 변환
+with open(STATE_PATH, "r", encoding="utf-8") as file:
+    state = json.load(file)
+
+quizzes = [
+    Quiz(item["question"], item["choices"], item["answer"])
+    for item in state["quizzes"]
+]
+
