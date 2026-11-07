@@ -33,6 +33,7 @@ quizzes = [
     for item in state["quizzes"]
 ]
 
+# 퀴즈 추가 함수
 def add_quiz(quizzes):
     question = input("문제: ")
 
@@ -55,6 +56,7 @@ def add_quiz(quizzes):
     print("퀴즈를 저장했습니다.")
 
 
+# 퀴즈 실행 함수
 def run_quiz(quizzes):
     score = 0
 
@@ -74,11 +76,31 @@ def run_quiz(quizzes):
 
     print(f"총 점수: {score}/{len(quizzes)}")
     
+    if quizzes:
+        best_score = state.get("best_score")
+
+        if best_score is None or score > best_score:
+            state["best_score"] = score
+            save_quizzes(quizzes)
+
+
+# 퀴즈 목록 출력 함수
 def list_quizzes(quizzes):
     for i, quiz in enumerate(quizzes):
         print(f"{i+1}. {quiz.question}")
 
 
+# 점수 확인 함수
+def check_score(quizzes):
+    best_score = state.get("best_score")
+
+    if best_score is not None:
+        print(f"최고 점수: {best_score}/{len(quizzes)}")
+    else:
+        print("아직 푼 퀴즈가 없습니다.")
+
+
+# 퀴즈 데이터를 json 파일에 저장하는 함수
 def save_quizzes(quizzes):
     state["quizzes"] = [           
             {
@@ -93,6 +115,7 @@ def save_quizzes(quizzes):
             json.dump(state, file, ensure_ascii=False, indent=4)
 
 
+# 프로그램 실행 함수
 def main():
     while True:
         print("\n=== 퀴즈 프로그램 ===")       # 퀴즈 프로그램 메뉴 출력
@@ -109,7 +132,7 @@ def main():
             "1": lambda: run_quiz(quizzes),    # lambda를 사용하여 함수를 호출할 때 인자를 전달하지 않고 실행
             "2": lambda: add_quiz(quizzes),
             "3": lambda: list_quizzes(quizzes),
-            "4": lambda: print("아직 구현하지 않은 기능입니다."),
+            "4": lambda: check_score(quizzes),
             "5": exit
         }
 
