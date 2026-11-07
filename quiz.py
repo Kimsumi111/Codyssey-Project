@@ -33,3 +33,34 @@ quizzes = [
     for item in state["quizzes"]
 ]
 
+def main():
+    while True:
+        print("\n=== 퀴즈 프로그램 ===")       # 퀴즈 프로그램 메뉴 출력
+        print("1. 퀴즈 풀기")
+        print("2. 퀴즈 추가")
+        print("3. 퀴즈 목록 보기")
+        print("4. 점수 확인")
+        print("5. 종료")
+        print("=== 선택해주세요. ===")
+
+        choice = input("선택: ")
+
+        switch = {
+            "1": lambda: print("아직 구현하지 않은 기능입니다."),    # lambda를 사용하여 함수를 호출할 때 인자를 전달하지 않고 실행
+            "2": lambda: print("아직 구현하지 않은 기능입니다."),
+            "3": lambda: print("아직 구현하지 않은 기능입니다."),
+            "4": lambda: print("아직 구현하지 않은 기능입니다."),
+            "5": exit
+        }
+
+        action = switch.get(choice)   # 선택한 번호에 연결된 함수 가져오기
+
+        if action is not None:        # 선택한 번호가 존재하면
+            action()                  # 함수 실행
+        else:
+            print("1~5 중 하나를 입력해주세요.")
+
+
+if __name__ == "__main__":
+    main()
+
