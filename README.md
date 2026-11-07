@@ -75,7 +75,8 @@ drwx------ 2 rlatnal4125031 rlatnal4125031 4096 Nov 7 16:23 permission-dir
 drwxr-xr-x 2 rlatnal4125031 rlatnal4125031 4096 Nov 7 16:23 permission-dir
 ```
 
-<!-- 파일·디렉터리 권한 변경 실습 스크린샷을 바로 아래에 삽입 -->
+<img width="1360" height="621" alt="스크린샷 2026-11-07 162406" src="https://github.com/user-attachments/assets/54405755-3891-4043-93c5-526433514645" />
+
 
 파일은 `600 → 644`, 디렉터리는 `700 → 755`로 정상 변경되었다. 파일 권한은 `ls -l`, 디렉터리 권한은 `ls -ld`로 확인했다.
 
