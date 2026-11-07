@@ -416,12 +416,19 @@ df60b115fe66   nginx:alpine   Up 4 seconds   0.0.0.0:8081->80/tcp
 
 ### 10.2 웹페이지 한글 깨짐
 
-- **문제:** 웹 브라우저에서 한글이 깨져 보임
-- **원인 가설:** HTML 문자셋 선언 또는 파일 저장 인코딩 불일치
-- **확인 방법:** `file -bi index.html`, `cat index.html`, `curl -I http://localhost:8081`
-- **조치 방안:** HTML `<head>`에 `<meta charset="UTF-8">`을 명시하고 파일을 UTF-8로 저장
+- **문제:** Nginx 웹 서버에서 정상적으로 출력되던 한글이 HTML 파일 수정 후 깨져 보이는 현상이 발생하였다.
+- **원인 가설:** 터미널에서 `echo` 명령어와 `>` 리디렉션을 이용해 `index.html`을 덮어쓰면서 기존 `<meta charset="UTF-8">` 선언이 사라졌을 가능성을 고려하였다.
+- **확인 방법:** `cat index.html`로 HTML 내용을 확인하고, `file -bi index.html`로 파일 인코딩을 점검한다. `curl -I http://localhost:8081`로 HTTP 응답 헤더도 확인할 수 있다.
+- **조치 방안:** `nano index.html`로 파일을 열어 `<head>` 영역에 UTF-8 문자셋을 선언하고 파일을 UTF-8 인코딩으로 저장한다.
 
-HTML에 UTF-8 문자셋을 선언하고 파일 인코딩을 UTF-8로 저장하여 한글 깨짐 문제를 점검한다.
+```html
+<head>
+    <meta charset="UTF-8">
+    <title>Docker Web Server</title>
+</head>
+```
+
+`nano`에서는 `Ctrl+O` → `Enter` → `Ctrl+X` 순서로 저장하고 종료한다. `>`는 파일 전체를 덮어쓰므로, 웹페이지 일부 문구만 변경할 때 기존 HTML 문서 구조와 문자셋 설정이 삭제되지 않도록 주의해야 한다.
 
 ### 10.3 Git push 오류
 
