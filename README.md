@@ -377,8 +377,8 @@ Git은 로컬 변경 이력·브랜치를 관리하고, GitHub는 저장소를 �
 **Git 설정 및 확인 명령**
 
 ```bash
-git config --global user.name "YOUR_NAME"
-git config --global user.email "YOUR_EMAIL"
+git config --global user.name *********
+git config --global user.email ********************
 git config --global init.defaultBranch main
 git config --list
 git remote -v
@@ -388,7 +388,6 @@ git status
 
 저장소: https://github.com/Kimsumi111/Codyssey-Project
 
-VSCode Source Control에서 변경 파일과 원격 저장소 연결 상태를 확인할 수 있다. Git 설정 및 연동 정보를 공유할 때는 토큰·비밀번호·개인키·인증 코드를 공개하지 않도록 주의한다.
 
 ---
 
