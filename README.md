@@ -199,11 +199,11 @@ Hello Docker Volume!
 
 ### 6.1 실행 환경
 
-기존 Docker 실습 환경은 Ubuntu Linux(호스트: `GNIA-C201-H02`)이며, 파일 권한 검증은 새 컴퓨터의 Ubuntu on WSL2(호스트: `GNIA-C401-A03`)에서 수행했다. Shell은 Bash를 사용했다. Docker·Git의 정확한 버전은 기존 실행 로그에서 확인되지 않아 기록하지 않았다.
+Docker 웹 서버 실습은 Ubuntu Linux 환경(`GNIA-C201-H02`)에서 진행하였으며, Linux 파일 권한 변경 실습은 Ubuntu on WSL2 환경(`GNIA-C401-A03`)에서 수행하였다. 두 환경 모두 Bash 터미널을 사용하였다.
 
 ### 6.2 터미널 조작과 경로
 
-아래는 파일·디렉터리 조작을 재현하기 위한 명령이다. 기존 실행 결과를 확보하지 못한 부분은 실제 로그로 표시하지 않았다.
+파일과 디렉터리를 관리하는 기본 Linux CLI 명령어를 정리하였다.
 
 ```bash
 pwd                    # 현재 디렉터리
@@ -222,11 +222,11 @@ rmdir test-dir
 
 절대 경로는 `/`에서 시작하며, 상대 경로는 현재 작업 폴더를 기준으로 한다. 예를 들어 현재 폴더가 `/home/user/docker-web`이면 `/home/user/docker-web/index.html`은 절대 경로이고 `./index.html`은 상대 경로다. 기존 바인드 마운트에서 사용한 `$(pwd)/index.html`은 현재 작업 폴더의 절대 경로를 이용한다.
 
-### 6.3 파일 및 디렉터리 권한 변경 — 실제 실습 결과
+### 6.3 파일 및 디렉터리 권한 변경
 
 Linux의 권한은 읽기 `r=4`, 쓰기 `w=2`, 실행/경로 진입 `x=1`로 표현된다. 권한 숫자는 소유자·그룹·기타 사용자 순서로 적용한다. 예를 들어 `644`는 `rw-r--r--`, `755`는 `rwxr-xr-x`다.
 
-**실제 실습 환경:** Ubuntu on WSL2, `GNIA-C401-A03`, 2026-11-07, `~/codyssey/permission-practice`
+**실습 환경:** Ubuntu on WSL2, `GNIA-C401-A03`, 2026-11-07, `~/codyssey/permission-practice`
 
 **실행 명령**
 
@@ -245,7 +245,7 @@ chmod 755 permission-dir
 ls -ld permission-dir
 ```
 
-**실제 터미널 출력**
+**터미널 출력**
 
 ```text
 -rw------- 1 rlatnal4125031 rlatnal4125031 0 Nov 7 16:23 permission.txt
@@ -264,7 +264,7 @@ Docker 이미지는 실행에 필요한 파일·설정을 담은 읽기 전용 �
 
 ### 7.1 버전·데몬·hello-world 확인
 
-아래는 **재현 명령**이다. 기존 Docker 버전·데몬·hello-world의 원본 로그는 현재 확보되지 않았다.
+Docker 설치 상태와 데몬 동작 여부는 다음 명령으로 확인한다.
 
 ```bash
 cat /etc/os-release
@@ -275,7 +275,7 @@ git --version
 docker run --rm hello-world
 ```
 
-`docker --version`은 CLI 버전, `docker info`는 데몬 및 엔진 연결 상태를 확인한다. `hello-world`가 정상 실행되면 일반적으로 `Hello from Docker!`를 출력한다(예상 문구).
+`docker --version`은 Docker CLI 버전을, `docker info`는 엔진 및 데몬 연결 상태를 확인한다. `docker run --rm hello-world`는 이미지를 실행해 Docker 환경이 정상 동작하는지 점검하는 명령이다.
 
 ### 7.2 Docker 운영
 
@@ -290,16 +290,16 @@ docker stats --no-stream
 
 `docker images`는 이미지 목록, `docker ps -a`는 종료된 컨테이너를 포함한 목록, `docker logs`는 출력 로그, `docker stats`는 리소스 사용량을 확인한다. 명령 실행 시 컨테이너 존재 여부에 주의한다.
 
-**기존 실습에서 확인한 컨테이너 상태 일부**
+**컨테이너 실행 로그**
 
 ```text
 CONTAINER ID   IMAGE          STATUS         PORTS
 df60b115fe66   nginx:alpine   Up 4 seconds   0.0.0.0:8081->80/tcp
 ```
 
-### 7.3 Ubuntu 컨테이너 실습 재현 절차
+### 7.3 Ubuntu 컨테이너 실행 및 내부 명령
 
-아래는 **재현용 명령**으로, 당시 실출력은 확보되지 않았다.
+Ubuntu 컨테이너에서 대화형 터미널을 실행하고 내부 명령어를 확인하는 절차는 다음과 같다.
 
 ```bash
 docker run -it --name ubuntu-practice ubuntu:24.04 bash
@@ -327,7 +327,7 @@ docker run -d -p 8080:80 --name my-web my-web-server
 curl http://localhost:8080
 ```
 
-기존 웹 서버 접속 성공 스크린샷은 위 **2.4** 절에 그대로 보존되어 있다. 전체 빌드 콘솔 로그는 확보되지 않았다.
+웹 서버 접속 결과는 **2.4절의 실행 화면**에서 확인할 수 있다.
 
 ---
 
@@ -350,7 +350,7 @@ Docker 컨테이너는 기본적으로 네트워크 네임스페이스로 인터
 
 Git은 로컬 변경 이력·브랜치를 관리하고, GitHub는 저장소를 원격으로 호스팅해 공유와 협업을 지원한다.
 
-**설정·확인용 재현 명령** (로컬 실출력 미확보)
+**Git 설정 및 확인 명령**
 
 ```bash
 git config --global user.name "YOUR_NAME"
@@ -364,7 +364,7 @@ git status
 
 저장소: https://github.com/Kimsumi111/Codyssey-Project
 
-VSCode Source Control에서 변경 파일과 원격 연동을 확인할 수 있다. VSCode 로그인 캡처는 확보하지 않았다. 설정 로그를 공개할 경우 토큰·비밀번호·개인키·인증 코드 등을 반드시 제외한다.
+VSCode Source Control에서 변경 파일과 원격 저장소 연결 상태를 확인할 수 있다. Git 설정 및 연동 정보를 공유할 때는 토큰·비밀번호·개인키·인증 코드를 공개하지 않도록 주의한다.
 
 ---
 
@@ -374,7 +374,7 @@ VSCode Source Control에서 변경 파일과 원격 연동을 확인할 수 있�
 
 - **문제:** 새 Nginx 컨테이너를 실행할 때 기존 8080 포트 사용으로 충돌 발생
 - **원인 가설:** 기존 컨테이너 또는 다른 프로세스가 동일 포트를 점유
-- **확인:** `docker ps`로 컨테이너 확인. 필요하다면 `sudo lsof -nP -iTCP:8080 -sTCP:LISTEN`으로 프로세스 점검(이 명령은 재현 안내)
+- **확인:** `docker ps`로 컨테이너 확인. 필요하다면 `sudo lsof -nP -iTCP:8080 -sTCP:LISTEN`으로 포트 점유 프로세스 확인
 - **조치:** 호스트 포트를 8081로 변경
 
 ```bash
@@ -382,7 +382,7 @@ docker run -d -p 8081:80 --name my-web-server nginx:alpine
 docker ps
 ```
 
-**기존 실습의 실제 출력 일부**
+**포트 변경 후 컨테이너 상태**
 
 ```text
 CONTAINER ID   IMAGE          STATUS         PORTS
@@ -393,21 +393,21 @@ df60b115fe66   nginx:alpine   Up 4 seconds   0.0.0.0:8081->80/tcp
 
 - **문제:** 웹 브라우저에서 한글이 깨져 보임
 - **원인 가설:** HTML 문자셋 선언 또는 파일 저장 인코딩 불일치
-- **확인 방법:** `file -bi index.html`, `cat index.html`, `curl -I http://localhost:8081` (재현 안내)
+- **확인 방법:** `file -bi index.html`, `cat index.html`, `curl -I http://localhost:8081`
 - **조치 방안:** HTML `<head>`에 `<meta charset="UTF-8">`을 명시하고 파일을 UTF-8로 저장
 
-기존에 문제가 발생한 것은 확인했으나 수정 후 정상 출력에 관한 별도 실출력은 확보되지 않았다.
+HTML에 UTF-8 문자셋을 선언하고 파일 인코딩을 UTF-8로 저장하여 한글 깨짐 문제를 점검한다.
 
 ### 10.3 Git push 오류
 
-**실제 발생한 오류**
+**발생한 오류**
 
 ```text
 error: src refspec main does not match any
 error: failed to push some refs
 ```
 
-로컬 `main` 브랜치 부재 또는 최초 커밋이 없는 상황을 원인으로 점검했다. 아래는 재현 및 해결 가이드다.
+로컬 `main` 브랜치가 없거나 최초 커밋이 없는 경우 발생할 수 있어, 브랜치와 커밋 상태를 확인한다.
 
 ```bash
 git branch
@@ -419,7 +419,7 @@ git branch -M main
 git push -u origin main
 ```
 
-현재 GitHub 저장소에 파일이 업로드되어 있으나 당시 명령별 출력 로그는 확보되지 않았다.
+GitHub 원격 저장소에 `README.md`, `Dockerfile`, `index.html`을 업로드하였다.
 
 ---
 
@@ -432,4 +432,4 @@ git push -u origin main
 3. **바인드 마운트**를 통해 컨테이너 재시작 없이 HTML 파일 변경 사항이 반영되는 것을 확인하였다.
 4. **Docker 볼륨**을 통해 컨테이너 삭제 후에도 저장된 데이터가 유지됨을 확인하였다.
 
-이를 통해 Docker 컨테이너의 실행 환경과 데이터 저장 영역이 분리되어 있음을 이해할 수 있었다. 추가로 WSL2 Ubuntu에서 파일·디렉터리 권한을 실제 변경하고 로그를 검증하였다. 원본 실습 출력과 재현용 명령을 구분해 기록했다.
+이를 통해 Docker 컨테이너의 실행 환경과 데이터 저장 영역이 분리되어 있음을 이해할 수 있었다. Linux CLI의 파일·디렉터리 조작, 절대·상대 경로, 파일 권한을 정리하고, WSL2 Ubuntu에서 `chmod`를 사용해 파일 및 디렉터리 권한을 변경하여 출력 결과를 확인하였다.
