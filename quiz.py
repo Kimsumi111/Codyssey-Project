@@ -33,6 +33,25 @@ quizzes = [
     for item in state["quizzes"]
 ]
 
+def run_quiz(quizzes):
+    score = 0
+
+    for quiz in quizzes:
+        quiz.print_quiz()
+
+        while True:    # 정답 번호를 입력받아 1~4 사이의 숫자인지 확인
+            user_answer = int(input("정답 번호(1~4): "))
+
+            if 1 <= user_answer <= 4:
+                break
+
+            print("1~4 사이의 숫자를 입력하세요.")
+
+        if quiz.check_answer(user_answer):
+            score += 1
+
+    print(f"총 점수: {score}/{len(quizzes)}")
+    
 def main():
     while True:
         print("\n=== 퀴즈 프로그램 ===")       # 퀴즈 프로그램 메뉴 출력
@@ -46,7 +65,7 @@ def main():
         choice = input("선택: ")
 
         switch = {
-            "1": lambda: print("아직 구현하지 않은 기능입니다."),    # lambda를 사용하여 함수를 호출할 때 인자를 전달하지 않고 실행
+            "1": lambda: run_quiz(quizzes),    # lambda를 사용하여 함수를 호출할 때 인자를 전달하지 않고 실행
             "2": lambda: print("아직 구현하지 않은 기능입니다."),
             "3": lambda: print("아직 구현하지 않은 기능입니다."),
             "4": lambda: print("아직 구현하지 않은 기능입니다."),
