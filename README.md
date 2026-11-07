@@ -195,7 +195,235 @@ Hello Docker Volume!
 
 ---
 
-## 6. 실습 결과 및 결론
+## 6. 개발 워크스테이션: Linux CLI 및 권한
+
+### 6.1 실행 환경
+
+기존 Docker 실습 환경은 Ubuntu Linux(호스트: `GNIA-C201-H02`)이며, 파일 권한 검증은 새 컴퓨터의 Ubuntu on WSL2(호스트: `GNIA-C401-A03`)에서 수행했다. Shell은 Bash를 사용했다. Docker·Git의 정확한 버전은 기존 실행 로그에서 확인되지 않아 기록하지 않았다.
+
+### 6.2 터미널 조작과 경로
+
+아래는 파일·디렉터리 조작을 재현하기 위한 명령이다. 기존 실행 결과를 확보하지 못한 부분은 실제 로그로 표시하지 않았다.
+
+```bash
+pwd                    # 현재 디렉터리
+ls -la                 # 숨김 파일 포함 목록
+mkdir -p ~/codyssey/practice
+cd ~/codyssey/practice
+touch example.txt
+echo "Hello Codyssey" > example.txt
+cat example.txt
+cp example.txt backup.txt
+mv backup.txt renamed.txt
+rm renamed.txt
+mkdir test-dir
+rmdir test-dir
+```
+
+절대 경로는 `/`에서 시작하며, 상대 경로는 현재 작업 폴더를 기준으로 한다. 예를 들어 현재 폴더가 `/home/user/docker-web`이면 `/home/user/docker-web/index.html`은 절대 경로이고 `./index.html`은 상대 경로다. 기존 바인드 마운트에서 사용한 `$(pwd)/index.html`은 현재 작업 폴더의 절대 경로를 이용한다.
+
+### 6.3 파일 및 디렉터리 권한 변경 — 실제 실습 결과
+
+Linux의 권한은 읽기 `r=4`, 쓰기 `w=2`, 실행/경로 진입 `x=1`로 표현된다. 권한 숫자는 소유자·그룹·기타 사용자 순서로 적용한다. 예를 들어 `644`는 `rw-r--r--`, `755`는 `rwxr-xr-x`다.
+
+**실제 실습 환경:** Ubuntu on WSL2, `GNIA-C401-A03`, 2026-11-07, `~/codyssey/permission-practice`
+
+**실행 명령**
+
+```bash
+mkdir -p ~/codyssey/permission-practice
+cd ~/codyssey/permission-practice
+touch permission.txt
+chmod 600 permission.txt
+ls -l permission.txt
+chmod 644 permission.txt
+ls -l permission.txt
+mkdir permission-dir
+chmod 700 permission-dir
+ls -ld permission-dir
+chmod 755 permission-dir
+ls -ld permission-dir
+```
+
+**실제 터미널 출력**
+
+```text
+-rw------- 1 rlatnal4125031 rlatnal4125031 0 Nov 7 16:23 permission.txt
+-rw-r--r-- 1 rlatnal4125031 rlatnal4125031 0 Nov 7 16:23 permission.txt
+drwx------ 2 rlatnal4125031 rlatnal4125031 4096 Nov 7 16:23 permission-dir
+drwxr-xr-x 2 rlatnal4125031 rlatnal4125031 4096 Nov 7 16:23 permission-dir
+```
+
+파일은 `600 → 644`, 디렉터리는 `700 → 755`로 정상 변경되었다. 파일 권한은 `ls -l`, 디렉터리 권한은 `ls -ld`로 확인했다.
+
+---
+
+## 7. Docker 점검 및 운영 명령
+
+Docker 이미지는 실행에 필요한 파일·설정을 담은 읽기 전용 템플릿이며, 컨테이너는 이를 기반으로 생성하는 실행 인스턴스다. 컨테이너 자체의 저장 레이어는 삭제 시 사라질 수 있으므로, 영속 데이터는 별도 볼륨이나 마운트로 관리한다.
+
+### 7.1 버전·데몬·hello-world 확인
+
+아래는 **재현 명령**이다. 기존 Docker 버전·데몬·hello-world의 원본 로그는 현재 확보되지 않았다.
+
+```bash
+cat /etc/os-release
+echo "$SHELL"
+docker --version
+docker info
+git --version
+docker run --rm hello-world
+```
+
+`docker --version`은 CLI 버전, `docker info`는 데몬 및 엔진 연결 상태를 확인한다. `hello-world`가 정상 실행되면 일반적으로 `Hello from Docker!`를 출력한다(예상 문구).
+
+### 7.2 Docker 운영
+
+```bash
+docker pull nginx:alpine
+docker images
+docker ps
+docker ps -a
+docker logs my-web-server
+docker stats --no-stream
+```
+
+`docker images`는 이미지 목록, `docker ps -a`는 종료된 컨테이너를 포함한 목록, `docker logs`는 출력 로그, `docker stats`는 리소스 사용량을 확인한다. 명령 실행 시 컨테이너 존재 여부에 주의한다.
+
+**기존 실습에서 확인한 컨테이너 상태 일부**
+
+```text
+CONTAINER ID   IMAGE          STATUS         PORTS
+df60b115fe66   nginx:alpine   Up 4 seconds   0.0.0.0:8081->80/tcp
+```
+
+### 7.3 Ubuntu 컨테이너 실습 재현 절차
+
+아래는 **재현용 명령**으로, 당시 실출력은 확보되지 않았다.
+
+```bash
+docker run -it --name ubuntu-practice ubuntu:24.04 bash
+# 컨테이너 내부
+pwd
+ls -la
+echo "Hello from Ubuntu"
+exit
+# 호스트에서
+docker ps -a
+docker start ubuntu-practice
+docker exec ubuntu-practice echo "Exec test"
+```
+
+`docker attach`는 실행 중인 주 프로세스에 연결하며, `docker exec`는 실행 중인 컨테이너에서 추가 명령을 실행한다. 주 프로세스가 종료된 컨테이너에서는 먼저 `docker start`가 필요하다.
+
+### 7.4 커스텀 이미지 빌드 검증
+
+본 저장소의 `Dockerfile`은 `nginx:alpine`을 베이스로 사용하고, `COPY index.html`로 기본 콘텐츠를 교체한다. `EXPOSE 80`은 내부 포트를 문서화하는 설정이며 호스트 포트 게시와는 다르다.
+
+```bash
+docker build -t my-web-server .
+docker images
+docker run -d -p 8080:80 --name my-web my-web-server
+curl http://localhost:8080
+```
+
+기존 웹 서버 접속 성공 스크린샷은 위 **2.4** 절에 그대로 보존되어 있다. 전체 빌드 콘솔 로그는 확보되지 않았다.
+
+---
+
+## 8. Docker 네트워크 및 마운트 이해
+
+Docker 컨테이너는 기본적으로 네트워크 네임스페이스로 인터페이스·라우팅 테이블·포트 공간 등이 분리된다. `-p 8080:80`은 호스트의 8080 포트로 유입된 연결을 컨테이너 내부의 80 포트로 전달한다. 컨테이너의 `EXPOSE 80` 선언만으로 호스트에서 바로 접속할 수 있는 것은 아니다.
+
+| 항목 | 바인드 마운트 | Docker 볼륨 |
+|---|---|---|
+| 저장 위치 | 지정한 호스트 파일·경로 | Docker 관리 영역 |
+| 주요 용도 | 개발 중 소스 파일 즉시 반영 | 컨테이너 삭제 후 데이터 보존 |
+| 장점 | 호스트에서 파일 직접 수정 | Docker가 저장소를 관리 |
+| 주의점 | 호스트 경로·권한에 의존 | 볼륨 자체를 삭제하면 데이터 손실 가능 |
+
+실습에서는 바인드 마운트의 `:ro` 옵션으로 컨테이너 내부 파일을 읽기 전용으로 마운트했다. `$(pwd)`는 현재 경로를 확장하므로 `Dockerfile`과 `index.html`이 있는 작업 디렉터리에서 명령을 실행해야 한다.
+
+---
+
+## 9. Git 및 GitHub 연동
+
+Git은 로컬 변경 이력·브랜치를 관리하고, GitHub는 저장소를 원격으로 호스팅해 공유와 협업을 지원한다.
+
+**설정·확인용 재현 명령** (로컬 실출력 미확보)
+
+```bash
+git config --global user.name "YOUR_NAME"
+git config --global user.email "YOUR_EMAIL"
+git config --global init.defaultBranch main
+git config --list
+git remote -v
+git branch --show-current
+git status
+```
+
+저장소: https://github.com/Kimsumi111/Codyssey-Project
+
+VSCode Source Control에서 변경 파일과 원격 연동을 확인할 수 있다. VSCode 로그인 캡처는 확보하지 않았다. 설정 로그를 공개할 경우 토큰·비밀번호·개인키·인증 코드 등을 반드시 제외한다.
+
+---
+
+## 10. 트러블슈팅
+
+### 10.1 호스트 포트 8080 충돌
+
+- **문제:** 새 Nginx 컨테이너를 실행할 때 기존 8080 포트 사용으로 충돌 발생
+- **원인 가설:** 기존 컨테이너 또는 다른 프로세스가 동일 포트를 점유
+- **확인:** `docker ps`로 컨테이너 확인. 필요하다면 `sudo lsof -nP -iTCP:8080 -sTCP:LISTEN`으로 프로세스 점검(이 명령은 재현 안내)
+- **조치:** 호스트 포트를 8081로 변경
+
+```bash
+docker run -d -p 8081:80 --name my-web-server nginx:alpine
+docker ps
+```
+
+**기존 실습의 실제 출력 일부**
+
+```text
+CONTAINER ID   IMAGE          STATUS         PORTS
+df60b115fe66   nginx:alpine   Up 4 seconds   0.0.0.0:8081->80/tcp
+```
+
+### 10.2 웹페이지 한글 깨짐
+
+- **문제:** 웹 브라우저에서 한글이 깨져 보임
+- **원인 가설:** HTML 문자셋 선언 또는 파일 저장 인코딩 불일치
+- **확인 방법:** `file -bi index.html`, `cat index.html`, `curl -I http://localhost:8081` (재현 안내)
+- **조치 방안:** HTML `<head>`에 `<meta charset="UTF-8">`을 명시하고 파일을 UTF-8로 저장
+
+기존에 문제가 발생한 것은 확인했으나 수정 후 정상 출력에 관한 별도 실출력은 확보되지 않았다.
+
+### 10.3 Git push 오류
+
+**실제 발생한 오류**
+
+```text
+error: src refspec main does not match any
+error: failed to push some refs
+```
+
+로컬 `main` 브랜치 부재 또는 최초 커밋이 없는 상황을 원인으로 점검했다. 아래는 재현 및 해결 가이드다.
+
+```bash
+git branch
+git log -1
+git status
+git add .
+git commit -m "Initial commit"
+git branch -M main
+git push -u origin main
+```
+
+현재 GitHub 저장소에 파일이 업로드되어 있으나 당시 명령별 출력 로그는 확보되지 않았다.
+
+---
+
+## 11. 실습 결과 및 결론
 
 이번 실습을 통해 Dockerfile 기반 웹 서버를 구축하고, Docker 컨테이너의 실행 및 데이터 관리 방식을 확인하였다.
 
@@ -204,4 +432,4 @@ Hello Docker Volume!
 3. **바인드 마운트**를 통해 컨테이너 재시작 없이 HTML 파일 변경 사항이 반영되는 것을 확인하였다.
 4. **Docker 볼륨**을 통해 컨테이너 삭제 후에도 저장된 데이터가 유지됨을 확인하였다.
 
-이를 통해 Docker 컨테이너의 실행 환경과 데이터 저장 영역이 분리되어 있음을 이해할 수 있었다.
+이를 통해 Docker 컨테이너의 실행 환경과 데이터 저장 영역이 분리되어 있음을 이해할 수 있었다. 추가로 WSL2 Ubuntu에서 파일·디렉터리 권한을 실제 변경하고 로그를 검증하였다. 원본 실습 출력과 재현용 명령을 구분해 기록했다.
